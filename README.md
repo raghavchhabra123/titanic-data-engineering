@@ -5,7 +5,7 @@ The goal is to practice reproducible data processing, model training, and deploy
 
 
 ## Project Structure
-
+```
 titanic-data-engineering/
 ├── data/
 │ ├── train.csv
@@ -25,7 +25,7 @@ titanic-data-engineering/
 ├── predictions.csv # Model predictions output (Python)
 ├── .gitignore
 └── README.md
-
+```
 
 ## Overview
 
@@ -59,12 +59,12 @@ Ensure your `data/` folder contains:
 
 
 Ensure your data/ folder contains:
-
+```
 data/
 ├── train.csv
 ├── test.csv
 └── gender_submission.csv
-
+```
 If you downloaded the Kaggle zip file, extract it and place all three CSVs into the /data directory.
 
 ### Build the Docker image:
