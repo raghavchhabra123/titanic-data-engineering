@@ -1,18 +1,18 @@
+import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 def load_and_process_data():
-    # Load Titanic dataset
-    url = "https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv"
-    df = pd.read_csv(url)
-    print("Data loaded successfully. Shape:", df.shape)
+    # Load Titanic dataset from local folder 
+    data_path = os.path.join("data", "train.csv")   # this relative to /app inside Docker
+    df = pd.read_csv(data_path)
+    print(f"Data loaded successfully. Shape: {df.shape}")
 
-    # ---------------------------------------
-    # 🧹 Basic Data Cleaning
-    # ---------------------------------------
-    # Drop duplicate rows if any
+    # Basic Data Cleaning
+
+    # Drop duplicate rows(if any)
     df = df.drop_duplicates()
     print("Duplicates removed. Shape:", df.shape)
 
@@ -27,9 +27,7 @@ def load_and_process_data():
     df = df.dropna(subset=["Sex", "Survived"])
     print("Missing values handled. Remaining NA count:\n", df.isna().sum())
 
-    # ---------------------------------------
     # Feature Engineering
-    # ---------------------------------------
     df["FamilySize"] = df["SibSp"] + df["Parch"] + 1
     df["Sex"] = df["Sex"].map({"male": 0, "female": 1})
     df = pd.get_dummies(df, columns=["Embarked"], drop_first=True)
@@ -38,16 +36,12 @@ def load_and_process_data():
     X = df[["Pclass", "Age", "Fare", "Sex", "FamilySize", "Embarked_Q", "Embarked_S"]]
     y = df["Survived"]
 
-    # ---------------------------------------
     # Split Data
-    # ---------------------------------------
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
 
-    # ---------------------------------------
     # Train Model
-    # ---------------------------------------
     model = LogisticRegression(max_iter=1000)
     model.fit(X_train, y_train)
 
@@ -55,12 +49,10 @@ def load_and_process_data():
     print(f"Model trained successfully.")
     print("Training Accuracy:", round(train_acc, 3))
 
-    # ---------------------------------------
-    # 💾 Save Predictions (as per updated instructions)
-    # ---------------------------------------
+    # Save Predictions (as per updated instructions)
     y_pred = model.predict(X_test)
 
-    # Re-attach PassengerId and Name (for readability)
+    # Re-attach PassengerId and Name 
     test_passengers = df.loc[X_test.index, ["PassengerId", "Name"]].reset_index(drop=True)
 
     output = pd.DataFrame({
@@ -71,10 +63,10 @@ def load_and_process_data():
 
     # Save to CSV
     output.to_csv("predictions.csv", index=False)
-    print("✅ Predictions saved to predictions.csv")
+    print("Predictions saved to predictions.csv")
 
     # Display a sample of predictions in terminal
-    print("\n🔍 Sample Predictions:")
+    print("\nSample Predictions:")
     print(output.head(10).to_string(index=False))
 
 if __name__ == "__main__":
