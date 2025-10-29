@@ -55,7 +55,11 @@ cd titanic-data-engineering
 ```
 ### Verify Data Files
 
-Ensure your `data/` folder contains:
+**Note:** The `/data/` folder in this repository is empty.
+
+Download the Titanic dataset (`train.csv`, `test.csv`, `gender_submission.csv`) from [Kaggle](https://www.kaggle.com/competitions/titanic/data)
+and place them inside the `/data/` directory before building or running the Docker containers.
+
 
 
 Ensure your data/ folder contains:
@@ -65,7 +69,7 @@ data/
 ├── test.csv
 └── gender_submission.csv
 ```
-If you downloaded the Kaggle zip file, extract it and place all three CSVs into the /data directory.
+When you download the Kaggle zip file, extract it and place all three CSVs into the /data directory.
 
 ### Build the Docker image:
 docker build -t titanic-model-py --no-cache -f Dockerfile .

@@ -14,6 +14,7 @@ data/*.zip
 *.bak
 *.tmp
 
-# But keep these
-!data/train.csv
-!data/test.csv
+# Ignore real data files
+data/*.csv
+!data/README.md
+
