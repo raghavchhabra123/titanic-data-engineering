@@ -1,4 +1,4 @@
-# Use the official R base image
+# Use R base image
 FROM r-base:latest
 
 # Install system dependencies for tidyverse & caret
@@ -12,16 +12,14 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libpng-dev \
     libtiff5-dev \
-    libjpeg-dev
+    libjpeg-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory inside the container
 WORKDIR /app
 
-# Copy all R scripts and supporting files into the container
+# Copy all project files and data into the container
 COPY . .
-
-# Copy the local dataset from the parent folder into the container
-COPY ../data ./data
 
 # Install necessary R packages
 RUN Rscript src_r/install_packages.R
