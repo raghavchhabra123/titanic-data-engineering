@@ -1,15 +1,15 @@
-# Use the official lightweight Python image
-FROM python:3.13-slim
+# Use Python base image
+FROM python:3.10-slim
 
-# Set the working directory inside the container
+# Set working directory inside container
 WORKDIR /app
 
-# Copy requirements and install dependencies
+# Copy requirements first and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project into the container
+# Copy all project files (including data and src)
 COPY . .
 
-# Command to run your Python script
+# Run the Python script
 CMD ["python", "src/main.py"]

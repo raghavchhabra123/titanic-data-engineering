@@ -1,8 +1,20 @@
-# Ignore data and hidden system files
-data/
-*.csv
-.DS_Store
-
-# Python cache
+# Ignore local and generated files
 __pycache__/
 *.pyc
+*.Rhistory
+*.RData
+*.log
+*.DS_Store
+.env
+*.csv
+data/*.zip
+
+# Ignore Docker build stuff
+*.tar
+*.bak
+*.tmp
+
+# Ignore real data files
+data/*.csv
+!data/README.md
+
