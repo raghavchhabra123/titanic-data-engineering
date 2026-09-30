@@ -1,167 +1,87 @@
-# Titanic Data Engineering Project
+# Titanic Data Engineering: Containerized Python and R Pipelines
 
-This project demonstrates containerized data engineering and machine learning pipelines in **both Python and R** using the Titanic dataset.  
-The goal is to practice reproducible data processing, model training, and deployment inside Docker containers, ensuring that anyone can reproduce results easily.
+A coursework project on reproducible data processing. The same Titanic survival pipeline (load, clean, engineer features, fit a logistic regression, write predictions) is implemented twice, in **Python** and in **R**, and each runs inside its own Docker container.
 
+## Project structure
 
-## Project Structure
 ```
 titanic-data-engineering/
 ├── data/
-│ ├── train.csv
-│ ├── test.csv
-│ └── gender_submission.csv
-│
+│   └── README.md          # the Kaggle CSVs go here (not committed)
 ├── src/
-│ └── main.py # Python pipeline: data loading, cleaning, logistic regression, predictions
-│
+│   └── main.py            # Python pipeline: pandas + scikit-learn
 ├── src_r/
-│ ├── main.R # R pipeline: data cleaning, logistic regression (caret), predictions
-│ ├── install_packages.R # Installs required R libraries
-│ └── Dockerfile # Dockerfile for R container
-│
-├── Dockerfile # Dockerfile for Python container
-├── requirements.txt # Python dependencies
-├── predictions.csv # Model predictions output (Python)
-├── .gitignore
+│   ├── main.R             # R pipeline: tidyverse + caret
+│   ├── install_packages.R # installs the R dependencies
+│   └── Dockerfile         # R container
+├── Dockerfile             # Python container
+├── requirements.txt       # Python dependencies
 └── README.md
 ```
 
-## Overview
+## What each pipeline does
 
-The project runs two independent pipelines (Python and R) to predict passenger survival on the Titanic dataset.
+**Python (`src/main.py`)**
+- Loads `data/train.csv`, removes duplicates, and fills missing `Age`, `Fare`, and `Embarked` values
+- Engineers `FamilySize`, encodes `Sex`, and one-hot encodes `Embarked`
+- Trains a scikit-learn logistic regression on an 80/20 split
+- Writes predictions for the held-out rows to `predictions.csv`
 
-### Python container:
-- Loads and preprocesses data from `/data/train.csv`
-- Removes duplicates, fills missing values, and encodes categorical features
-- Trains a logistic regression model using `scikit-learn`
-- Saves predictions to `predictions.csv`
+**R (`src_r/main.R`)**
+- Loads `data/train.csv` with `tidyverse`; drops rows with missing `Age`, `Fare`, or `Embarked` instead of imputing them
+- Engineers `FamilySize` and encodes `Sex`
+- Uses `caret` for an 80/20 split and fits a logistic regression (`glm`)
+- Writes predictions for the held-out rows to `predictions_r.csv`
 
-### R container:
-- Loads and cleans data using `tidyverse`
-- Handles missing values and performs a logistic regression model using `caret`
-- Outputs predictions to `predictions_r.csv`
-- Prints training accuracy and a sample of predictions in the console
+Both pipelines use only Kaggle's labeled `train.csv`, split into training and held-out rows.
 
----
+## Setup
 
-## Setup Instructions
+1. Clone the repository:
 
-### Clone the Repository
+   ```bash
+   git clone https://github.com/raghavchhabra123/titanic-data-engineering.git
+   cd titanic-data-engineering
+   ```
+
+2. Download `train.csv`, `test.csv`, and `gender_submission.csv` from [Kaggle](https://www.kaggle.com/competitions/titanic/data) and put them in `data/`. The CSVs are not committed to this repository.
+
+## Run the Python pipeline
 
 ```bash
-git clone https://github.com/raghavchhabra123/titanic-data-engineering.git
-cd titanic-data-engineering
+docker build -t titanic-model-py -f Dockerfile .
+docker run --rm -v "$PWD":/app titanic-model-py
 ```
-### Verify Data Files
 
-**Note:** The `/data/` folder in this repository is empty.
+## Run the R pipeline
 
-Download the Titanic dataset (`train.csv`, `test.csv`, `gender_submission.csv`) from [Kaggle](https://www.kaggle.com/competitions/titanic/data)
-and place them inside the `/data/` directory before building or running the Docker containers.
-
-
-
-Ensure your data/ folder contains:
+```bash
+docker build -t titanic-model-r -f src_r/Dockerfile .
+docker run --rm -v "$PWD":/app titanic-model-r
 ```
-data/
-├── train.csv
-├── test.csv
-└── gender_submission.csv
+
+Mounting the project folder (`-v "$PWD":/app`) makes `predictions.csv` and `predictions_r.csv` appear in the project root on your machine. Without the mount, they are written inside the container only.
+
+## Expected console output (Python)
+
 ```
-When you download the Kaggle zip file, extract it and place all three CSVs into the /data directory.
-
-### Build the Docker image:
-docker build -t titanic-model-py --no-cache -f Dockerfile .
-
-### Run the container:
-docker run titanic-model-py
-
-### Expected Output:
-
 Data loaded successfully. Shape: (891, 12)
 Duplicates removed. Shape: (891, 12)
-Missing values handled.
-Feature engineering complete.
+Missing values handled. Remaining NA count:
+...
 Model trained successfully.
+Training Accuracy: ...
 Predictions saved to predictions.csv
 
 Sample Predictions:
 PassengerId  Name                          PredictedSurvival
-1            Braund, Mr. Owen Harris       0
-4            Futrelle, Mrs. Jacques Heath  1
-5            Allen, Mr. William Henry      0
 ...
+```
 
-### R Pipeline:
+## What this project demonstrates
 
-### Build the Docker Image:
-docker build -t titanic-model-r --no-cache -f src_r/Dockerfile .
+- Packaging data pipelines in Docker so they run the same way on any machine
+- Implementing and comparing equivalent pipelines in Python and R
+- Keeping raw data out of version control
 
-### Run the Container:
-docker run titanic-model-r
-
-### Expected Output:
-Packages installed successfully
-Data loaded successfully. Shape: 891 rows, 12 columns
-Duplicates removed
-Missing values handled
-Feature engineering complete
-Model trained successfully
-Predictions saved to predictions_r.csv
-
-Sample Predictions:
-Name                                    PredictedSurvival
-Braund, Mr. Owen Harris                 0
-Futrelle, Mrs. Jacques Heath (Lily)     1
-Allen, Mr. William Henry                0
-...
-
-### Outputs:
-
-After running both containers, you should see:
-predictions.csv        # Output from Python model
-predictions_r.csv      # Output from R model
-
-
-Both contain passenger names and their predicted survival values.
-
-### Requirements Summary
-
-Python:
-pandas
-scikit-learn
-
-R:
-tidyverse
-caret
-lattice
-
-### How to Reproduce
-1. Clone the repository
-
-git clone https://github.com/raghavchhabra123/titanic-data-engineering.git
-cd titanic-data-engineering
-
-2. Add your Titanic dataset files to /data
-
-3. Build and run containers:
-
-   For Python:
-   docker build -t titanic-model-py -f Dockerfile .
-   docker run titanic-model-py
-
-   For R:
-   docker build -t titanic-model-r -f src_r/Dockerfile .
-   docker run titanic-model-r
-
-4. Verify output files in the project root.
-
-### Summary
-
-This project showcases:
-Using Docker for reproducible ML environments
-Implementing and comparing Python + R pipelines
-
-Author: Raghav Chhabra
-Date: October 2025
+*Author: Raghav Chhabra · October 2025*
